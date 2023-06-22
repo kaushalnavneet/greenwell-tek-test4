@@ -1,0 +1,260 @@
+{
+    "_id": "3595409368274e338835fbe47cdbbdea",
+    "_rev": "13-44d90212f4f58be311272969d0a969e3",
+    "jazzHubProjectId": "a843b58e-4ab1-4646-a909-cdc25af24952",
+    "name": "ci-pipeline",
+    "status": "OK",
+    "enabled": true,
+    "viewed": false,
+    "restrictDeployments": false,
+    "restrictModifications": false,
+    "dateCreated": 1628102659462,
+    "lastModified": 1628102677932,
+    "stages": [
+      {
+        "id": "51446fa3-8ee3-45d0-875c-f9da0a931c13",
+        "name": "BUILD",
+        "jobs": [
+          {
+            "type": "builder.engine2",
+            "id": "ac6751f7-cb1d-451d-bcac-ceb247e824bc",
+            "triggers": [],
+            "failStage": true,
+            "produceArtifacts": true,
+            "services": null,
+            "coverageFilePattern": null,
+            "coverageDir": null,
+            "componentName": "Fetch code",
+            "artifactDir": "",
+            "workingDir": "",
+            "status": "OK",
+            "dockerImage": null,
+            "curatedDockerImage": null,
+            "subType": "SHELL",
+            "buildType": "SHELL",
+            "buildScript": "#!/bin/bash\n# set -x\nexport match=`echo $IDS_URL | grep test`\nif [ $match ]; then\n    ibmcloud api test.cloud.ibm.com\nfi\n# Git repo cloned at $WORKING_DIR, copy into $ARCHIVE_DIR\nmkdir -p $ARCHIVE_DIR\ncp -R -n ./ $ARCHIVE_DIR/ || true\n\n# Record git info\necho \"GIT_URL=${GIT_URL}\" >> $ARCHIVE_DIR/build.properties\necho \"GIT_BRANCH=${GIT_BRANCH}\" >> $ARCHIVE_DIR/build.properties\necho \"GIT_COMMIT=${GIT_COMMIT}\" >> $ARCHIVE_DIR/build.properties\necho \"SOURCE_BUILD_NUMBER=${BUILD_NUMBER}\" >> $ARCHIVE_DIR/build.properties\ncat $ARCHIVE_DIR/build.properties\n\n# check if doi is integrated in this toolchain\nif jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n  # Record build information\n  ibmcloud login --apikey ${IBM_CLOUD_API_KEY} --no-region\n  ibmcloud doi publishbuildrecord --branch ${GIT_BRANCH} --repositoryurl ${GIT_URL} --commitid ${GIT_COMMIT} \\\n    --buildnumber ${BUILD_NUMBER} --logicalappname ${APP_NAME} --status pass\nfi\n",
+            "testFilePattern": null,
+            "enableTests": false,
+            "coverageType": "NONE",
+            "script": "#!/bin/bash\n# set -x\nexport match=`echo $IDS_URL | grep test`\nif [ $match ]; then\n    ibmcloud api test.cloud.ibm.com\nfi\n# Git repo cloned at $WORKING_DIR, copy into $ARCHIVE_DIR\nmkdir -p $ARCHIVE_DIR\ncp -R -n ./ $ARCHIVE_DIR/ || true\n\n# Record git info\necho \"GIT_URL=${GIT_URL}\" >> $ARCHIVE_DIR/build.properties\necho \"GIT_BRANCH=${GIT_BRANCH}\" >> $ARCHIVE_DIR/build.properties\necho \"GIT_COMMIT=${GIT_COMMIT}\" >> $ARCHIVE_DIR/build.properties\necho \"SOURCE_BUILD_NUMBER=${BUILD_NUMBER}\" >> $ARCHIVE_DIR/build.properties\ncat $ARCHIVE_DIR/build.properties\n\n# check if doi is integrated in this toolchain\nif jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n  # Record build information\n  ibmcloud login --apikey ${IBM_CLOUD_API_KEY} --no-region\n  ibmcloud doi publishbuildrecord --branch ${GIT_BRANCH} --repositoryurl ${GIT_URL} --commitid ${GIT_COMMIT} \\\n    --buildnumber ${BUILD_NUMBER} --logicalappname ${APP_NAME} --status pass\nfi\n"
+          },
+          {
+            "type": "tester.engine2",
+            "id": "2b3bfd2c-90be-4c38-862a-e1d89f64cda0",
+            "archiveDir": null,
+            "directoryOffset": "",
+            "triggers": [],
+            "failStage": true,
+            "produceArtifacts": false,
+            "services": null,
+            "coverageFilePattern": null,
+            "coverageDir": null,
+            "testType": "SIMPLE",
+            "componentName": "Unit Tests",
+            "status": "OK",
+            "dockerImage": null,
+            "curatedDockerImage": null,
+            "subType": "SIMPLE",
+            "buildScript": "#!/bin/bash\n# set -x\n# need to set the ibmcloud api for staging env. The value defaults to cloud.ibm.com\nexport match=`echo $IDS_URL | grep test`\nif [ $match ]; then\n    ibmcloud api test.cloud.ibm.com\nfi\nif [ -f ./test/run-tests.sh ]; then\n  source ./test/run-tests.sh\n  ibmcloud login --apikey $IBM_CLOUD_API_KEY --no-region\n  IFS=';' read -ra locations <<< \"$FILE_LOCATIONS\"\n  IFS=';' read -ra types <<< \"$TEST_TYPES\"\n  if jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n    for i in \"${!locations[@]}\"\n    do\n      echo \"$i ${locations[i]} ${types[i]}\"\n      ibmcloud doi publishtestrecord --logicalappname=\"$APP_NAME\" --buildnumber=$BUILD_NUMBER --filelocation=${locations[i]} --type=${types[i]}\n    done\n  fi\nelse\n  echo \"Test runner script not found: ./test/run-tests.sh\"\nfi",
+            "testFilePattern": null,
+            "enableTests": false,
+            "coverageType": "NONE",
+            "script": "#!/bin/bash\n# set -x\n# need to set the ibmcloud api for staging env. The value defaults to cloud.ibm.com\nexport match=`echo $IDS_URL | grep test`\nif [ $match ]; then\n    ibmcloud api test.cloud.ibm.com\nfi\nif [ -f ./test/run-tests.sh ]; then\n  source ./test/run-tests.sh\n  ibmcloud login --apikey $IBM_CLOUD_API_KEY --no-region\n  IFS=';' read -ra locations <<< \"$FILE_LOCATIONS\"\n  IFS=';' read -ra types <<< \"$TEST_TYPES\"\n  if jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n    for i in \"${!locations[@]}\"\n    do\n      echo \"$i ${locations[i]} ${types[i]}\"\n      ibmcloud doi publishtestrecord --logicalappname=\"$APP_NAME\" --buildnumber=$BUILD_NUMBER --filelocation=${locations[i]} --type=${types[i]}\n    done\n  fi\nelse\n  echo \"Test runner script not found: ./test/run-tests.sh\"\nfi"
+          },
+          {
+            "type": "builder.engine2",
+            "id": "0ac2bb6f-9c80-46a3-824e-6833f211c262",
+            "triggers": [],
+            "failStage": true,
+            "produceArtifacts": true,
+            "services": null,
+            "coverageFilePattern": null,
+            "coverageDir": null,
+            "componentName": "Build",
+            "artifactDir": "",
+            "workingDir": "",
+            "status": "OK",
+            "dockerImage": null,
+            "curatedDockerImage": null,
+            "subType": "NONE",
+            "buildType": "NONE",
+            "buildScript": null,
+            "testFilePattern": null,
+            "enableTests": false,
+            "coverageType": "NONE",
+            "script": null
+          }
+        ],
+        "inputs": [
+          {
+            "type": "scm",
+            "id": "e8ba63b7-a8b9-4b40-956c-b4ea6acc089d",
+            "scmSource": {
+              "type": "BluemixGit",
+              "blindConnection": false,
+              "url": "https://us-east.git.cloud.ibm.com/Navneet.Kaushal/bcdr-test-toolchain.git",
+              "branch": "main",
+              "token": "1IMwnWlkPCcy9Tzb3ihvwraTIr1Qc3yI6jayfFIvWBPkdObsvEmDMBLgYC1XrelX",
+              "hookId": "35507"
+            },
+            "dirName": null,
+            "serviceInstanceId": "72b509db-7935-4270-bbc7-ab74b973d52d"
+          }
+        ],
+        "triggers": [
+          {
+            "type": "CommitTrigger",
+            "scmSource": {
+              "type": "BluemixGit",
+              "blindConnection": false,
+              "url": "https://us-east.git.cloud.ibm.com/Navneet.Kaushal/bcdr-test-toolchain.git",
+              "branch": "main",
+              "token": "1IMwnWlkPCcy9Tzb3ihvwraTIr1Qc3yI6jayfFIvWBPkdObsvEmDMBLgYC1XrelX",
+              "hookId": "35507"
+            },
+            "id": "c1baf7a2-c85c-4720-a45d-057cecc4405e",
+            "enabled": true,
+            "events": "{\"push\":true,\"pull_request\":false,\"pull_request_closed\":false}"
+          }
+        ],
+        "properties": [],
+        "stagePermission": {
+          "execute": "TOOLCHAIN_ADMINS"
+        },
+        "worker": null
+      },
+      {
+        "id": "6d96bb51-2cb7-4cf2-80c9-efb178d05774",
+        "name": "DEPLOY",
+        "jobs": [
+          {
+            "type": "deployer.engine2",
+            "archiveDir": null,
+            "directoryOffset": null,
+            "triggers": [],
+            "failStage": true,
+            "produceArtifacts": false,
+            "services": null,
+            "deployerId": "0ac2bb6f-9c80-46a3-824e-6833f211c262",
+            "deployType": "CF",
+            "bmApiKey": "Ut5a5Z2dy+Hy14837FkTMEPSPxKVWLZyAnkz5/f8Mvkx9HNbf8OiIYPhhVlqhvm+O/k2fRGKWGNfENCt+oYTI92JBTScfpjj2/v9PLieXCM=",
+            "cforganizationGuid": null,
+            "cfspaceGuid": null,
+            "cfhost": null,
+            "cfusername": null,
+            "cfpassword": null,
+            "id": "addb38cb-28be-4a3e-9073-d58764befdcc",
+            "componentName": "Rolling Deploy",
+            "status": "OK",
+            "dockerImage": null,
+            "curatedDockerImage": null,
+            "subType": "CF",
+            "script": "#!/bin/bash\n# Push app\nif ! cf app \"$CF_APP\"; then  \n  cf push \"$CF_APP\"\nelse\n  OLD_CF_APP=\"${CF_APP}-OLD-$(date +\"%s\")\"\n  rollback() {\n    set +e  \n    if cf app \"$OLD_CF_APP\"; then\n      cf logs \"$CF_APP\" --recent\n      cf delete \"$CF_APP\" -f\n      cf rename \"$OLD_CF_APP\" \"$CF_APP\"\n    fi\n    exit 1\n  }\n  set -e\n  trap rollback ERR\n  cf rename \"$CF_APP\" \"$OLD_CF_APP\"\n  cf push \"$CF_APP\"\n  cf delete \"$OLD_CF_APP\" -f\nfi\n# Export app name and URL for use in later Pipeline jobs\nexport CF_APP_NAME=\"$CF_APP\"\nexport APP_URL=http://$(cf app $CF_APP_NAME | grep -e urls: -e routes: | awk '{print $2}')\n# View logs\n#cf logs \"${CF_APP}\" --recent\n",
+            "cfeeEnv": null,
+            "cfapplication": "bcdr-test-toolchain",
+            "cforganizationName": "navneet.kaushal@ibm.com",
+            "cfspaceName": "wdc",
+            "cfregionid": "ibm:yp:us-east",
+            "cfcliConfiguration": null,
+            "cfmetadata": null
+          }
+        ],
+        "inputs": [
+          {
+            "type": "job",
+            "id": "d3bfbca4-3eba-4c6b-bed0-fe464fc8fb26",
+            "jobId": "0ac2bb6f-9c80-46a3-824e-6833f211c262",
+            "stageId": "51446fa3-8ee3-45d0-875c-f9da0a931c13",
+            "dirName": null,
+            "serviceInstanceId": null
+          }
+        ],
+        "triggers": [
+          {
+            "type": "StageCompletedTrigger",
+            "id": "0d4251c2-313c-46cc-9918-c780fe761eff",
+            "status": true,
+            "enabled": true,
+            "events": null
+          }
+        ],
+        "properties": [
+          {
+            "type": "TEXT",
+            "name": "CF_APP_NAME",
+            "value": "undefined"
+          },
+          {
+            "type": "TEXT",
+            "name": "APP_URL",
+            "value": "undefined"
+          }
+        ],
+        "stagePermission": {
+          "execute": "TOOLCHAIN_ADMINS"
+        },
+        "worker": null
+      }
+    ],
+    "toolchainCredentials": "MzU5NTQwOTMtNjgyNy00ZTMzLTg4MzUtZmJlNDdjZGJiZGVhOnsxMjh9YjE1YzhlYjNjMmU1NjI4YTY1YjY2YTQ1N2Y1YzA2NGQqNDQxNmUwMDU1MjNmOGRhMDZiYjEwY2U5MzcxZTZmNWYwOWYzMzQ1MTFhYWU4NjFlOGM0YTg1YmUxYzhlYWU0OGYyMWFkNDAyNjYwNWJmMTBlNTM4MTUwYzMwNDk0MWMwYmRiYzc0YmFiODU4YzI5MWZjNTlhN2UzNjdkMWI0Y2ZmY2I5MjY5Zjk2NGUwZTMyNjk3MTVjMjg3MDgzYjk3NDA3MmUyNjdlNTljZmQ1NTc2ODYyMWU3MGI1MGI0ODM2Njg3MmY5ZWE3MDBhZTFlMzFmOWFhOTYxYzY1ZDhiMGNmZjI3MDYwMjM1N2NhYzg4ZjFjYjk0NWNiMWYzYjhhMA",
+    "webhooks": [
+      {
+        "id": "890491c7-b575-4771-bc7d-84927ef58f62",
+        "label": null,
+        "token": null,
+        "url": "https://devops-api.us-east.devops.cloud.ibm.com/v1/messaging/webhook/publish",
+        "enabled": true,
+        "sslEnabled": true
+      }
+    ],
+    "resourceGroupId": "c33ce6036ba8411cb066eafb3b0151f3",
+    "configuration": {
+      "requested": 1628102659659,
+      "pending": false,
+      "started": 1628102675799,
+      "services": [
+        "sample-repo"
+      ],
+      "completed": 1628102677922,
+      "env": {
+        "SAMPLE_REPO_FULL": "https://us-south.git.cloud.ibm.com/Navneet.Kaushal/bcdr-test-toolchain",
+        "PIPELINE_REPO_BRANCH": "main",
+        "DEFINITIONS_BRANCH": "main",
+        "TEKTON_CATALOG_REPO": "tekton-catalog-repo",
+        "PIPELINE_REPO": "pipeline-repo",
+        "IBMCLOUD_API": "https://cloud.ibm.com",
+        "APP_REPO_BRANCH": "main",
+        "CF_APP_NAME": "bcdr-test-toolchain",
+        "API_KEY": "{vault::ibm-keyprotect-secrets-1.bcdr-test-toolchain}",
+        "PROD_ORG_NAME": "navneet.kaushal@ibm.com",
+        "GIT_COMMIT_EVENT_LISTENER_NAME": "grit-or-gitlab-commit",
+        "PROD_SPACE_NAME": "wdc",
+        "PROD_REGION_ID": "ibm:yp:us-east",
+        "SAMPLE_REPO": "sample-repo"
+      },
+      "execute": true,
+      "config": {
+        "format": "yaml",
+        "content": "---\ndefaultBaseImageVersion: latest\nproperties:\n- name: IBM_CLOUD_API_KEY\n  value: ${API_KEY}\n  type: secure\n- name: APP_NAME\n  value: ${CF_APP_NAME}\n  type: text\n- name: APP_REPO_BRANCH\n  value: ${APP_REPO_BRANCH}\n  type: text\nstages:\n- name: BUILD\n  inputs:\n  - type: git\n    branch: ${APP_REPO_BRANCH}\n    service: ${SAMPLE_REPO}\n  triggers:\n  - type: commit\n  jobs:\n  - name: Fetch code\n    type: builder\n    artifact_dir: ''\n    build_type: shell\n    script: |+\n      #!/bin/bash\n      # set -x\n      export match=`echo $IDS_URL | grep test`\n      if [ $match ]; then\n          ibmcloud api test.cloud.ibm.com\n      fi\n      # Git repo cloned at $WORKING_DIR, copy into $ARCHIVE_DIR\n      mkdir -p $ARCHIVE_DIR\n      cp -R -n ./ $ARCHIVE_DIR/ || true\n\n      # Record git info\n      echo \"GIT_URL=${GIT_URL}\" >> $ARCHIVE_DIR/build.properties\n      echo \"GIT_BRANCH=${GIT_BRANCH}\" >> $ARCHIVE_DIR/build.properties\n      echo \"GIT_COMMIT=${GIT_COMMIT}\" >> $ARCHIVE_DIR/build.properties\n      echo \"SOURCE_BUILD_NUMBER=${BUILD_NUMBER}\" >> $ARCHIVE_DIR/build.properties\n      cat $ARCHIVE_DIR/build.properties\n\n      # check if doi is integrated in this toolchain\n      if jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n        # Record build information\n        ibmcloud login --apikey ${IBM_CLOUD_API_KEY} --no-region\n        ibmcloud doi publishbuildrecord --branch ${GIT_BRANCH} --repositoryurl ${GIT_URL} --commitid ${GIT_COMMIT} \\\n          --buildnumber ${BUILD_NUMBER} --logicalappname ${APP_NAME} --status pass\n      fi\n  - name: Unit Tests\n    type: tester\n    script: |-\n      #!/bin/bash\n      # set -x\n      # need to set the ibmcloud api for staging env. The value defaults to cloud.ibm.com\n      export match=`echo $IDS_URL | grep test`\n      if [ $match ]; then\n          ibmcloud api test.cloud.ibm.com\n      fi\n      if [ -f ./test/run-tests.sh ]; then\n        source ./test/run-tests.sh\n        ibmcloud login --apikey $IBM_CLOUD_API_KEY --no-region\n        IFS=';' read -ra locations <<< \"$FILE_LOCATIONS\"\n        IFS=';' read -ra types <<< \"$TEST_TYPES\"\n        if jq -e '.services[] | select(.service_id==\"draservicebroker\")' _toolchain.json; then\n          for i in \"${!locations[@]}\"\n          do\n            echo \"$i ${locations[i]} ${types[i]}\"\n            ibmcloud doi publishtestrecord --logicalappname=\"$APP_NAME\" --buildnumber=$BUILD_NUMBER --filelocation=${locations[i]} --type=${types[i]}\n          done\n        fi\n      else\n        echo \"Test runner script not found: ./test/run-tests.sh\"\n      fi\n  - name: Build\n    type: builder\n- name: DEPLOY\n  inputs:\n  - type: job\n    stage: BUILD\n    job: Build\n  triggers:\n  - type: stage\n  properties:\n  - name: CF_APP_NAME\n    value: undefined\n    type: text\n  - name: APP_URL\n    value: undefined\n    type: text\n  jobs:\n  - name: Rolling Deploy\n    type: deployer\n    target:\n      region_id: ${PROD_REGION_ID}\n      organization: ${PROD_ORG_NAME}\n      space: ${PROD_SPACE_NAME}\n      application: ${CF_APP_NAME}\n      api_key: ${API_KEY}\n    script: |\n      #!/bin/bash\n      # Push app\n      if ! cf app \"$CF_APP\"; then  \n        cf push \"$CF_APP\"\n      else\n        OLD_CF_APP=\"${CF_APP}-OLD-$(date +\"%s\")\"\n        rollback() {\n          set +e  \n          if cf app \"$OLD_CF_APP\"; then\n            cf logs \"$CF_APP\" --recent\n            cf delete \"$CF_APP\" -f\n            cf rename \"$OLD_CF_APP\" \"$CF_APP\"\n          fi\n          exit 1\n        }\n        set -e\n        trap rollback ERR\n        cf rename \"$CF_APP\" \"$OLD_CF_APP\"\n        cf push \"$CF_APP\"\n        cf delete \"$OLD_CF_APP\" -f\n      fi\n      # Export app name and URL for use in later Pipeline jobs\n      export CF_APP_NAME=\"$CF_APP\"\n      export APP_URL=http://$(cf app $CF_APP_NAME | grep -e urls: -e routes: | awk '{print $2}')\n      # View logs\n      #cf logs \"${CF_APP}\" --recent\n      \n"
+      },
+      "user": null
+    },
+    "properties": [
+      {
+        "type": "SECURE",
+        "name": "IBM_CLOUD_API_KEY",
+        "value": "Ut5a5Z2dy+Hy14837FkTMEPSPxKVWLZyAnkz5/f8Mvkx9HNbf8OiIYPhhVlqhvm+O/k2fRGKWGNfENCt+oYTI92JBTScfpjj2/v9PLieXCM="
+      },
+      {
+        "type": "TEXT",
+        "name": "APP_NAME",
+        "value": "bcdr-test-toolchain"
+      },
+      {
+        "type": "TEXT",
+        "name": "APP_REPO_BRANCH",
+        "value": "main"
+      }
+    ],
+    "defaultBaseImageVersion": "latest"
+  }

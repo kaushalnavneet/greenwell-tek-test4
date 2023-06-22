@@ -1,0 +1,33 @@
+{
+    "_id": "3dc04ea9-b327-446f-9878-89ec09beb28b",
+    "_rev": "2-cace555b6babbba7b27055b602583c89",
+    "type": "service_instance",
+    "parameters": {
+      "channel_name": "bcdr-wdc-slack",
+      "label": "#bcdr-wdc-slack",
+      "pipeline_events": {
+        "start": true,
+        "success": true,
+        "fail": true
+      },
+      "toolchain_events": {
+        "bind": true,
+        "unbind": true
+      }
+    },
+    "instance_id": "#bcdr-wdc-slack",
+    "dashboard_url": "https://navneettest.slack.com/messages/bcdr-wdc-slack",
+    "container": {
+      "guid": "c33ce6036ba8411cb066eafb3b0151f3",
+      "type": "resource_group_id"
+    },
+    "service_credentials": "M2RjMDRlYTktYjMyNy00NDZmLTk4NzgtODllYzA5YmViMjhiOnsxMjh9YjIwMGU0N2JlODYwNWY0ODYwODVhYWJhYjg1OTkzZTIqMzg3MTkzYmZkNDhhNzI3YzU0NjI2Y2U2YWI2NmQ1ZGFkMWNjOTdiYmZjMjZjNDY4N2Y2MmFmMWQ3ZmI5ZDUwMWEzYzM4MTg0MTU5ODg2ZGM0ZDJmNjIyYWMyMzdiNGQ3ZjU1MmE0NmU2OTVjMzdhNmI4YTZkZDFjMzE5YTFlOGZkMjEwYzIyZjM2ZTYwM2M2OWYwYWNkYTQ0MGQ3ZjEzYw",
+    "channel_newly_created": false,
+    "toolchain_ids": [
+      {
+        "id": "a843b58e-4ab1-4646-a909-cdc25af24952",
+        "credentials": "M2RjMDRlYTktYjMyNy00NDZmLTk4NzgtODllYzA5YmViMjhiOnsxMjh9MTg4N2FlM2NkNmQ3OGRmOGRhZTdiOTA1MTRhZDU4MTcqMmUxMzA5MzdjYzBkMDAxYzY4NjdjNjcyM2M5ZGVkYmJmNmViMGY3MTQwZmUzYTVkOWQxNmMyMGI3NGYyZTY1NTI5YzVhNmMzMzY2MTk1ZTdjMmE4ZjQ3ODAxNjYzODgyNzQwMDg1ZWQ0NjRiNTY0NWFlMzllYWZiNWE1Yjg4NjFhMWMxMGM3YWY2YmY3Njc0OWM1ZmFiMDdhOWY0NWVhMGRhNTliMzRjM2E2NmE4Yzg1NjgyNzJiMGE5NTIwMWJiNGE3ZTk0NDZmMmU3NmYxZmJmMDliMDk5Mjc3YWFkZjJhMDAyYTk3OWJjYjcxNjYyOWZhMTZhMzRjMWZmYmFhOQ"
+      }
+    ],
+    "encryptedApiToken": "f09782bb5d7d734538eb995b7317ae0c:28793cf375b021c301524d4af871410ec5eab0b5c7429ed25a0bbbebd25444a07ce9fd3a45d683aed3d25e85b111f7acc0b54d09d465b86c7002282a11554fb439d107874f274397cc35793828f5ade31d"
+  }
